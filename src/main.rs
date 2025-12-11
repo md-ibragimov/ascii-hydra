@@ -9,6 +9,9 @@ use std::io::{Write, stdout};
 mod game;
 
 fn main() -> std::io::Result<()> {
+    // Глобальное состояние игры.
+    let mut game_state = game::gamestate::GameState::new();
+
     // Включаем raw-режим терминала для мгновенного чтения клавиш
     enable_raw_mode()?;
     // Прячем курсор
@@ -21,7 +24,7 @@ fn main() -> std::io::Result<()> {
     //     Clear(ClearType::All)
     // )?;
 
-    game::field::draw_field();
+    game::field::draw_field(&game_state);
 
     // ГЛАВНЫЙ ИГРОВОЙ ЦИКЛ
     'game_loop: loop {

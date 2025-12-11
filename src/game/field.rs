@@ -1,3 +1,4 @@
+use crate::game::gamestate::GameState;
 use crossterm::{
     cursor::MoveTo,
     execute, queue,
@@ -11,9 +12,8 @@ struct GameField {
     height: u16,
 }
 
-pub fn draw_field() -> std::io::Result<()> {
+pub fn draw_field(state: &GameState) -> std::io::Result<()> {
     let (width, height) = terminal::size()?; // (columns, rows)
-    let mut score: u16 = 0;
 
     let field_width = width;
     let field_height = height - 2;
@@ -47,7 +47,7 @@ pub fn draw_field() -> std::io::Result<()> {
     }
 
     // 3. Вывод игровой информации (счет)
-    let score_text = format!("Score: {}", score);
+    let score_text = format!("Score: {}", state.score);
     queue!(stdout, MoveTo(2, field.height), Print(score_text))?;
 
     stdout.flush()?;
