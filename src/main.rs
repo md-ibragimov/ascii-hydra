@@ -5,10 +5,17 @@ use crossterm::{
     style::{Color, Print, SetBackgroundColor},
     terminal::{self, Clear, ClearType, disable_raw_mode, enable_raw_mode},
 };
-use std::io::{Write, stdout};
+use std::{
+    io::{Write, stdout},
+    thread,
+    time::{Duration, Instant},
+};
 mod game;
 
 fn main() -> std::io::Result<()> {
+    // Частота обновления
+    let frame_duration = Duration::from_millis(1000); // 1 секунда
+
     // Глобальное состояние игры.
     let mut game_state = game::gamestate::GameState::new();
 
@@ -17,17 +24,24 @@ fn main() -> std::io::Result<()> {
     // Прячем курсор
     execute!(stdout(), Hide)?;
 
-    // Начальная отрисовка фона
-    // execute!(
-    //     stdout(),
-    //     SetBackgroundColor(Color::DarkGrey),
-    //     Clear(ClearType::All)
-    // )?;
-
+    // Отрисовка фона
     game::field::draw_field(&game_state);
 
     // ГЛАВНЫЙ ИГРОВОЙ ЦИКЛ
     'game_loop: loop {
+        let frame_start = Instant::now(); // Для замера времени
+
+        let elapsed = frame_start.elapsed();
+        if elapsed < frame_duration {
+            thread::sleep(frame_duration - elapsed);
+        }
+
+        // Обновление
+        game_state.update();
+
+        // Рендер
+        game::gameplay::render(&game_state);
+
         // 1. ОБРАБОТКА ВВОДА
         if event::poll(std::time::Duration::from_millis(16))? {
             // ~60 FPS
