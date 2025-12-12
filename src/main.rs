@@ -25,22 +25,15 @@ fn main() -> std::io::Result<()> {
     execute!(stdout(), Hide)?;
 
     // Отрисовка фона
-    game::field::draw_field(&game_state);
+    game::field::draw_field(&game_state)?;
 
     // ГЛАВНЫЙ ИГРОВОЙ ЦИКЛ
     'game_loop: loop {
-        let frame_start = Instant::now(); // Для замера времени
-
-        let elapsed = frame_start.elapsed();
-        if elapsed < frame_duration {
-            thread::sleep(frame_duration - elapsed);
-        }
-
         // Обновление
         game_state.update();
 
         // Рендер
-        game::gameplay::render(&game_state);
+        game::gameplay::render(&game_state)?;
 
         // 1. ОБРАБОТКА ВВОДА
         if event::poll(std::time::Duration::from_millis(16))? {
@@ -54,6 +47,13 @@ fn main() -> std::io::Result<()> {
                     _ => {} // Игнорируем другие клавиши
                 }
             }
+        }
+
+        let frame_start = Instant::now(); // Для замера времени
+
+        let elapsed = frame_start.elapsed();
+        if elapsed < frame_duration {
+            thread::sleep(frame_duration - elapsed);
         }
     }
 
