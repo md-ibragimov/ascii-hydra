@@ -23,7 +23,7 @@ To run ASCII Hydra, you need to have the Rust toolchain installed on your system
 
 1.  **Clone the repository:**
     ```sh
-    git clone https://github.com/md-ibragimov/ascii-hydra.git
+    git clone https://github.com/crustypub/ascii-hydra.git
     ```
 
 2.  **Navigate to the project directory:**
