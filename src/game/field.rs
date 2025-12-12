@@ -46,10 +46,6 @@ pub fn draw_field(state: &GameState) -> std::io::Result<()> {
         queue!(stdout, MoveTo(field.width - 1, y), Print("#"))?; // Право
     }
 
-    // 3. Вывод игровой информации (счет)
-    let score_text = format!("Score: {}", state.score);
-    queue!(stdout, MoveTo(2, field.height), Print(score_text))?;
-
     stdout.flush()?;
     Ok(())
 }

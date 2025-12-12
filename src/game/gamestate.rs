@@ -1,4 +1,5 @@
 use crossterm::terminal;
+use rand::Rng;
 
 pub enum Action {
     Continue,
@@ -11,6 +12,8 @@ pub struct GameState {
     pub snake: Vec<(u16, u16)>,
     pub direction: String,
     pub tail_to_clear: Option<(u16, u16)>,
+    pub berry_position: (u16, u16),
+    pub ate_food: bool,
 }
 
 fn get_snake_coordinates() -> Vec<(u16, u16)> {
@@ -24,6 +27,15 @@ fn get_snake_coordinates() -> Vec<(u16, u16)> {
     return coordinates;
 }
 
+fn get_berry_random_coordinates() -> (u16, u16) {
+    let (max_width, max_height) = terminal::size().expect("Error with read terminal params");
+
+    let mut rng = rand::thread_rng();
+    let x = rng.random_range(1..max_width - 1);
+    let y = rng.random_range(1..max_height - 4);
+    (x, y)
+}
+
 impl GameState {
     pub fn new() -> Self {
         GameState {
@@ -32,11 +44,13 @@ impl GameState {
             snake: get_snake_coordinates(),
             direction: "left".to_string(),
             tail_to_clear: get_snake_coordinates().last().copied(),
+            berry_position: get_berry_random_coordinates(),
+            ate_food: false,
         }
     }
 
-    pub fn add_score(&mut self, points: u32) {
-        self.score += points;
+    pub fn add_score(&mut self) {
+        self.score += 1;
         if self.score > self.high_score {
             self.high_score = self.score;
         }
@@ -68,6 +82,7 @@ impl GameState {
 
         let (head_x, head_y) = new_head;
 
+        // Проверка на поедание самой себя
         for (x, y) in self.snake.clone() {
             if head_x == x && head_y == y {
                 println!("Game Over!");
@@ -75,23 +90,30 @@ impl GameState {
             }
         }
 
+        // Проверка на пересечение границы
         if head_x == 0 || head_y == 0 || head_x == width - 1 || head_y == height - 3 {
             println!("Game Over");
             return Action::Break;
         }
 
-        self.snake.pop();
+        if self.berry_position == head {
+            self.berry_position = get_berry_random_coordinates();
+            self.ate_food = true;
+            self.add_score();
+        } else if self.berry_position != head {
+            self.ate_food = false;
+        }
+
         // 3. Двигаем змейку: добавляем голову, удаляем хвост
         self.snake.insert(0, new_head);
 
         // // Если не съели еду - удаляем хвост
-        // if !self.ate_food {
-        //     self.snake.pop();
-        //     // tail_to_clear теперь верный - это старый хвост
-        // } else {
-        //     self.ate_food = false;
-        //     // Если съели еду, хвост НЕ удаляем, змейка растёт
-        // }
+        if !self.ate_food {
+            self.snake.pop();
+        } else {
+            self.ate_food = false;
+            // Если съели еду, хвост НЕ удаляем, змейка растёт
+        }
 
         return Action::Continue;
     }
